@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia Completo de Jetpack Compose — Do Estado à Tela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12141c;
+  --bg-alt:#0d0f16;
+  --surface:#1b1f2b;
+  --surface-2:#232838;
+  --border:#2c3244;
+  --text:#edeff7;
+  --text-muted:#8a90a6;
+  --text-dim:#5c6178;
+  --kotlin:#7f52ff;
+  --kotlin-soft:#a687ff;
+  --amber:#ff9d3d;
+  --android:#3ddc84;
+  --red:#ff6b6b;
+  --code-key:#ff9d3d;
+  --code-type:#7f52ff;
+  --code-str:#3ddc84;
+  --code-fn:#82aaff;
+  --code-com:#5c6178;
+  --radius:10px;
+  --maxw:1180px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:16px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+  line-height:1.2;
+  margin:0 0 .5em 0;
+  letter-spacing:-0.01em;
+}
+p{margin:0 0 1em 0;color:var(--text-muted);}
+a{color:var(--kotlin-soft);text-decoration:none;}
+a:hover{text-decoration:underline;}
+code, pre, .mono{font-family:'JetBrains Mono',monospace;}
+::selection{background:var(--kotlin);color:#fff;}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+
+/* ---------- layout shell ---------- */
+.shell{display:flex;max-width:1440px;margin:0 auto;}
+.sidebar{
+  width:260px;flex-shrink:0;
+  position:sticky;top:0;height:100vh;
+  overflow-y:auto;
+  padding:28px 18px 40px 28px;
+  border-right:1px solid var(--border);
+  background:var(--bg-alt);
+}
+.sidebar-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+.sidebar-brand .dot{width:10px;height:10px;border-radius:50%;background:var(--android);box-shadow:0 0 12px var(--android);}
+.sidebar-brand span{font-family:'Space Grotesk';font-weight:700;font-size:15px;}
+.nav-group{margin-bottom:22px;}
+.nav-group-title{
+  font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text-dim);font-weight:600;margin:0 0 8px 2px;
+}
+.nav-group a{
+  display:block;color:var(--text-muted);font-size:13.5px;
+  padding:6px 8px;border-radius:6px;margin-bottom:1px;
+  border-left:2px solid transparent;
+}
+.nav-group a:hover{color:var(--text);text-decoration:none;background:var(--surface);}
+.nav-group a.active{color:var(--kotlin-soft);border-left-color:var(--kotlin);background:var(--surface);}
+
+.main{flex:1;min-width:0;}
+.container{max-width:var(--maxw);margin:0 auto;padding:0 48px;}
+
+.menu-toggle{display:none;}
+
+/* ---------- hero ---------- */
+.hero{
+  padding:80px 0 60px;
+  border-bottom:1px solid var(--border);
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(127,82,255,.18), transparent 60%),
+    radial-gradient(ellipse 700px 400px at 90% 0%, rgba(61,220,132,.10), transparent 60%);
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono';font-size:12.5px;color:var(--android);
+  background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.25);
+  padding:5px 12px;border-radius:100px;margin-bottom:20px;
+}
+.hero h1{font-size:clamp(32px,4.4vw,52px);max-width:820px;color:#fff;}
+.hero h1 em{font-style:normal;color:var(--kotlin-soft);}
+.hero p.lead{font-size:18px;max-width:640px;margin-top:14px;}
+
+/* ---------- recomposition lab (signature element) ---------- */
+.lab{
+  margin-top:44px;border:1px solid var(--border);border-radius:14px;
+  background:var(--surface);overflow:hidden;
+}
+.lab-bar{
+  display:flex;align-items:center;gap:8px;padding:10px 16px;
+  background:var(--bg-alt);border-bottom:1px solid var(--border);
+}
+.lab-bar .traffic{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.lab-bar .filename{margin-left:8px;font-family:'JetBrains Mono';font-size:12.5px;color:var(--text-dim);}
+.lab-body{display:grid;grid-template-columns:1.1fr 1fr;gap:0;}
+@media (max-width:820px){.lab-body{grid-template-columns:1fr;}}
+.lab-code{
+  padding:22px 24px;border-right:1px solid var(--border);
+  font-family:'JetBrains Mono';font-size:13px;line-height:1.85;
+  color:var(--text-muted);white-space:pre;overflow-x:auto;
+}
+.lab-code .hl{background:rgba(255,157,61,.16);border-radius:3px;transition:background .5s ease;}
+.lab-code .hl.flash{background:rgba(255,157,61,.55);}
+.lab-preview{padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:
+  repeating-linear-gradient(45deg, rgba(255,255,255,.015) 0 10px, transparent 10px 20px);}
+.lab-preview .badge{font-family:'JetBrains Mono';font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;align-self:flex-start;}
+.count-display{font-family:'Space Grotesk';font-size:56px;font-weight:700;color:#fff;transition:transform .25s ease;}
+.count-display.pulse{transform:scale(1.12);color:var(--android);}
+.lab-btn{
+  font-family:'Inter';font-weight:600;font-size:14px;color:#fff;
+  background:var(--kotlin);border:none;padding:11px 22px;border-radius:8px;cursor:pointer;
+  transition:background .15s ease, transform .1s ease;
+}
+.lab-btn:hover{background:var(--kotlin-soft);}
+.lab-btn:active{transform:scale(.97);}
+.lab-note{font-size:12.5px;color:var(--text-dim);text-align:center;max-width:280px;}
+.lab-footer{
+  padding:12px 20px;border-top:1px solid var(--border);background:var(--bg-alt);
+  font-size:12.5px;color:var(--text-dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+.lab-footer b{color:var(--amber);font-family:'JetBrains Mono';font-weight:500;}
+
+/* ---------- generic section ---------- */
+section{padding:64px 0;border-bottom:1px solid var(--border);}
+section:last-of-type{border-bottom:none;}
+.section-kicker{font-family:'JetBrains Mono';font-size:12.5px;color:var(--kotlin-soft);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.section-intro{max-width:720px;font-size:16px;}
+article.topic{margin-top:52px;scroll-margin-top:24px;}
+article.topic h3{font-size:24px;color:#fff;display:flex;align-items:center;gap:10px;}
+article.topic .topic-tag{
+  font-family:'JetBrains Mono';font-size:11px;color:var(--bg);background:var(--android);
+  padding:2px 8px;border-radius:5px;font-weight:600;
+}
+.topic-body{max-width:760px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+@media (max-width:860px){.two-col{grid-template-columns:1fr;}}
+
+/* ---------- code blocks ---------- */
+.code-block{
+  background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;margin:16px 0;
+}
+.code-block .cb-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 14px;border-bottom:1px solid var(--border);
+  font-family:'JetBrains Mono';font-size:11.5px;color:var(--text-dim);
+  background:var(--surface);text-transform:uppercase;letter-spacing:.05em;
+}
+.code-block pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:'JetBrains Mono';font-size:13px;line-height:1.7;color:#dfe2ee;}
+.tk{color:var(--code-key);}      /* keywords */
+.tt{color:var(--code-type);}     /* types */
+.ts{color:var(--code-str);}      /* strings/literals */
+.tf{color:var(--code-fn);}       /* function/param names */
+.tc{color:var(--code-com);font-style:italic;} /* comments */
+
+/* ---------- callouts ---------- */
+.callout{
+  border-radius:10px;padding:16px 18px;margin:18px 0;
+  border:1px solid var(--border);background:var(--surface);
+  display:flex;gap:12px;
+}
+.callout .icon{font-size:18px;line-height:1;flex-shrink:0;margin-top:1px;}
+.callout p{margin:0;font-size:14.5px;color:var(--text-muted);}
+.callout p strong{color:var(--text);}
+.callout.tip{border-color:rgba(61,220,132,.3);background:rgba(61,220,132,.06);}
+.callout.warn{border-color:rgba(255,157,61,.3);background:rgba(255,157,61,.06);}
+.callout.error{border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.06);}
+
+/* ---------- visual diagrams (layouts) ---------- */
+.diagram-row{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0;}
+.diagram{
+  border:1px solid var(--border);border-radius:10px;background:var(--bg-alt);
+  padding:14px;flex:1;min-width:220px;
+}
+.diagram .dtitle{font-family:'JetBrains Mono';font-size:11.5px;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;}
+.diagram-box{height:130px;border:1px dashed var(--border);border-radius:6px;display:flex;padding:8px;gap:6px;background:rgba(255,255,255,.015);}
+.diagram-box.col{flex-direction:column;}
+.diagram-box.row{flex-direction:row;}
+.diagram-box.centerc{align-items:center;justify-content:center;}
+.diagram-box.spacebetween{justify-content:space-between;}
+.diagram-box.spacearound{justify-content:space-around;}
+.diagram-box.start{justify-content:flex-start;}
+.diagram-box.end{justify-content:flex-end;}
+.chip{
+  background:var(--kotlin);border-radius:5px;min-width:28px;min-height:22px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono';font-size:10px;color:#fff;font-weight:600;
+}
+.chip:nth-child(2){background:var(--android);color:#0d0f16;}
+.chip:nth-child(3){background:var(--amber);color:#0d0f16;}
+
+/* ---------- component gallery ---------- */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:18px 0;}
+.gcard{border:1px solid var(--border);border-radius:10px;padding:16px;background:var(--surface);}
+.gcard .gname{font-family:'JetBrains Mono';font-size:12px;color:var(--amber);margin-bottom:10px;}
+.gcard .gdemo{display:flex;align-items:center;justify-content:center;min-height:56px;}
+.fake-btn{background:var(--kotlin);color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Inter';}
+.fake-outline-btn{border:1px solid var(--kotlin-soft);color:var(--kotlin-soft);padding:8px 17px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Inter';}
+.fake-field{border:1px solid var(--border);border-radius:6px;padding:9px 12px;font-size:13px;color:var(--text-dim);width:100%;font-family:'Inter';}
+.fake-field.focus{border-color:var(--kotlin);color:var(--text);}
+.fake-card{border:1px solid var(--border);border-radius:8px;padding:12px;width:100%;background:var(--bg-alt);font-size:12px;color:var(--text-muted);}
+.fake-text{font-family:'Inter';color:var(--text);}
+.fake-text.small{font-size:12px;color:var(--text-dim);}
+
+/* extra market components */
+.fake-checkbox{width:20px;height:20px;border-radius:4px;background:var(--kotlin);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.fake-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--kotlin);display:flex;align-items:center;justify-content:center;}
+.fake-radio .dot{width:9px;height:9px;border-radius:50%;background:var(--kotlin);}
+.fake-switch{width:42px;height:24px;border-radius:100px;background:var(--kotlin);display:flex;align-items:center;padding:3px;justify-content:flex-end;}
+.fake-switch .knob{width:18px;height:18px;border-radius:50%;background:#fff;}
+.fake-icon{width:38px;height:38px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:17px;}
+.fake-fab{width:52px;height:52px;border-radius:50%;background:var(--amber);color:#0d0f16;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;box-shadow:0 6px 18px rgba(255,157,61,.35);}
+.fake-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:100px;padding:6px 14px;font-size:12.5px;color:var(--text);}
+.fake-divider{width:100%;height:1px;background:var(--border);}
+.fake-progress-linear{width:100%;height:6px;border-radius:100px;background:var(--surface-2);overflow:hidden;}
+.fake-progress-linear .fill{width:62%;height:100%;background:var(--kotlin);}
+.fake-progress-circular{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface-2);border-top-color:var(--kotlin);animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.fake-topbar{width:100%;background:var(--surface-2);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--text);}
+.fake-bottomnav{width:100%;background:var(--surface-2);border-radius:8px;padding:10px 4px;display:flex;justify-content:space-around;font-size:10.5px;color:var(--text-dim);}
+.fake-bottomnav .item.active{color:var(--kotlin-soft);}
+.fake-list{width:100%;display:flex;flex-direction:column;gap:6px;}
+.fake-list .row{background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11.5px;color:var(--text-muted);}
+.fake-dialog{width:100%;background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.fake-dialog .dtitle2{font-family:'Space Grotesk';font-weight:600;color:#fff;font-size:13px;margin-bottom:6px;}
+.fake-dialog .dactions{display:flex;justify-content:flex-end;gap:14px;margin-top:10px;font-size:12px;color:var(--kotlin-soft);}
+.fake-dropdown{width:100%;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.fake-dropdown .ditem{padding:8px 12px;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border);}
+.fake-dropdown .ditem:last-child{border-bottom:none;}
+
+/* ---------- IDE preview mockup ---------- */
+.ide-mock{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg-alt);margin:20px 0;}
+.ide-mock .ide-top{display:flex;background:var(--surface);border-bottom:1px solid var(--border);}
+.ide-tab{padding:9px 16px;font-family:'JetBrains Mono';font-size:12px;color:var(--text-dim);border-right:1px solid var(--border);}
+.ide-tab.active{color:var(--text);background:var(--bg-alt);border-bottom:2px solid var(--kotlin);}
+.ide-split{display:grid;grid-template-columns:1fr 1fr;min-height:220px;}
+.ide-split .side{padding:16px;}
+.ide-split .side.code{border-right:1px solid var(--border);font-family:'JetBrains Mono';font-size:12px;color:var(--text-muted);line-height:1.8;}
+.ide-split .side.preview{display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(45deg, rgba(255,255,255,.015) 0 10px, transparent 10px 20px);}
+
+/* ---------- rubric-ish table ---------- */
+table.ref{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;}
+table.ref th{text-align:left;font-family:'JetBrains Mono';font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);padding:8px 12px;border-bottom:1px solid var(--border);}
+table.ref td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-muted);vertical-align:top;}
+table.ref td:first-child{color:var(--text);font-family:'JetBrains Mono';font-size:13px;white-space:nowrap;}
+
+/* ---------- case study tabs ---------- */
+.cs-tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.cs-tab-btn{
+  font-family:'Space Grotesk';font-weight:600;font-size:13.5px;color:var(--text-muted);
+  background:var(--surface);border:1px solid var(--border);padding:10px 18px;border-radius:9px;cursor:pointer;
+}
+.cs-tab-btn.active{color:#fff;border-color:var(--kotlin);background:rgba(127,82,255,.15);}
+.cs-panel{display:none;}
+.cs-panel.active{display:block;}
+.cs-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.cs-pill{font-family:'JetBrains Mono';font-size:11px;color:var(--text-dim);border:1px solid var(--border);padding:4px 10px;border-radius:100px;}
+
+/* ---------- footer ---------- */
+footer{padding:40px 0 60px;text-align:center;}
+footer p{font-size:13px;color:var(--text-dim);}
+
+/* ---------- mobile ---------- */
+@media (max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:40;transform:translateX(-100%);transition:transform .25s ease;width:82vw;max-width:300px;box-shadow:0 0 40px rgba(0,0,0,.5);}
+  .sidebar.open{transform:translateX(0);}
+  .menu-toggle{
+    display:flex;position:fixed;top:16px;left:16px;z-index:50;
+    width:42px;height:42px;border-radius:10px;background:var(--surface);
+    border:1px solid var(--border);color:#fff;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .container{padding:0 20px;}
+  .hero{padding-top:110px;}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;scroll-behavior:auto !important;}
+}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span><span>Compose Guia</span></div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Início</div>
+      <a href="#topo">Laboratório de Recomposição</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Fundamentos</div>
+      <a href="#declarativo">Declarativo vs. Imperativo</a>
+      <a href="#single-activity">Single-Activity Architecture</a>
+      <a href="#composable">Funções Composable</a>
+      <a href="#estado">Estado &amp; Recomposição</a>
+      <a href="#state-hoisting">State Hoisting</a>
+      <a href="#navegacao">Navegação com Enum</a>
+      <a href="#modifiers">Modifiers</a>
+      <a href="#layouts">Layouts: Column, Row, Box</a>
+      <a href="#componentes">Componentes Visuais</a>
+      <a href="#preview">Usando o Preview</a>
+      <a href="#seguranca">Segurança de Tipos</a>
+      <a href="#build-errors">Erros de Build (AAR)</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Estudos de Caso</div>
+      <a href="#casos">Os 3 Roteiros na Prática</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Referência</div>
+      <a href="#cheatsheet">Cheatsheet &amp; Glossário</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div id="topo"></div>
+    <section class="hero">
+      <div class="container">
+        <div class="eyebrow">● jetpack compose · single-activity architecture</div>
+        <h1>Tudo é <em>função do estado</em>. Aprenda a montar telas mudando variáveis, não Activities.</h1>
+        <p class="lead">Guia de referência para quem está construindo hubs de mini-apps em Compose: os conceitos, os componentes visuais e o porquê de cada linha de código — com os três roteiros da turma como estudo de caso.</p>
+
+        <div class="lab">
+          <div class="lab-bar">
+            <span class="traffic"></span><span class="traffic"></span><span class="traffic"></span>
+            <span class="filename">MainActivity.kt — Laboratório de Recomposição</span>
+          </div>
+          <div class="lab-body">
+            <div class="lab-code" id="labCode"><span class="tk">var</span> cliques <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">0</span>) }
+
+<span class="tt">Text</span>(<span class="tf">text</span> = <span class="hl" id="hlText">"Cliques: $cliques"</span>)
+
+<span class="tt">Button</span>(<span class="tf">onClick</span> = { <span class="hl" id="hlLambda">cliques++</span> }) {
+    <span class="tt">Text</span>(<span class="ts">"Incrementar"</span>)
+}</div>
+            <div class="lab-preview">
+              <span class="badge">Preview ao vivo</span>
+              <div class="count-display" id="labCount">0</div>
+              <button class="lab-btn" id="labBtn">Incrementar (+1)</button>
+              <p class="lab-note">Clique no botão. Repare que só o <b class="mono">Text</b> destacado é recomposto — o resto da árvore de UI nem percebe a mudança.</p>
+            </div>
+          </div>
+          <div class="lab-footer">
+            <span>Recomposições disparadas: <b id="labCounter">0</b></span>
+            <span>UI = f(<span style="color:var(--kotlin-soft)">state</span>)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="fundamentos-intro">
+      <div class="container">
+        <div class="section-kicker">Parte 1</div>
+        <h2 style="font-size:34px;color:#fff;">Fundamentos do Compose</h2>
+        <p class="section-intro">Antes dos desafios, vale entender por que o Compose funciona do jeito que funciona. Cada tópico abaixo é a peça de teoria por trás de uma linha que você já escreveu (ou vai escrever) nos roteiros.</p>
+
+        <article class="topic" id="declarativo">
+          <h3>Declarativo <span class="topic-tag">conceito-base</span></h3>
+          <div class="topic-body">
+            <p>No modelo <b>imperativo</b> (o Android "clássico" com XML + <code>findViewById</code>), você dá ordens passo a passo: "ache esse TextView, agora mude o texto dele". Você é responsável por manter a tela sincronizada com os dados manualmente.</p>
+            <p>No modelo <b>declarativo</b> do Compose, você não diz <em>como</em> mudar a tela — você descreve <em>como a tela deve se parecer para um determinado estado</em>. Quando o estado muda, o Compose recalcula essa descrição e atualiza só o que precisa. É a mesma lógica de uma fórmula de planilha: você não diz "apague a célula e escreva de novo", você escreve <code>=A1+A2</code> e ela se atualiza sozinha.</p>
+          </div>
+          <div class="callout tip">
+            <span class="icon">💡</span>
+            <p><strong>Por isso a assinatura do site:</strong> toda tela em Compose pode ser resumida na equação <code class="mono">UI = f(state)</code>. Fixe essa ideia — ela explica praticamente todo comportamento "estranho" que você vai encontrar no Compose.</p>
+          </div>
+
+          <div class="two-col">
+            <div class="code-block">
+              <div class="cb-head"><span style="color:var(--red);">imperativo (XML)</span></div>
+              <pre><span class="tk">val</span> tv = findViewById&lt;<span class="tt">TextView</span>&gt;(<span class="tf">R</span>.id.contador)
+<span class="tk">var</span> cliques = <span class="ts">0</span>
+
+botao.<span class="tf">setOnClickListener</span> {
+    cliques++
+    <span class="tc">// VOCÊ lembra de atualizar a tela</span>
+    tv.<span class="tf">text</span> = <span class="ts">"Cliques: $cliques"</span>
+}</pre>
+            </div>
+            <div class="code-block">
+              <div class="cb-head"><span style="color:var(--android);">declarativo (Compose)</span></div>
+              <pre><span class="tk">var</span> cliques <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">0</span>) }
+
+<span class="tt">Text</span>(<span class="ts">"Cliques: $cliques"</span>)
+<span class="tt">Button</span>(onClick = { cliques++ }) { ... }
+<span class="tc">// o Compose atualiza o Text sozinho</span></pre>
+            </div>
+          </div>
+          <p class="topic-body" style="margin-top:14px;">Repare: na versão XML, se você esquecer a linha <code class="mono">tv.text = ...</code>, a variável <code class="mono">cliques</code> muda mas a tela <em>não</em> — é um bug silencioso clássico. Na versão Compose, essa sincronização é automática porque o <code class="mono">Text</code> está declarado em função do estado, não escrito uma vez só.</p>
+        </article>
+
+        <article class="topic" id="single-activity">
+          <h3>Single-Activity Architecture <span class="topic-tag">arquitetura</span></h3>
+          <div class="two-col">
+            <div>
+              <p><b>Jeito antigo (XML + Intents):</b> cada tela era uma <code>Activity</code> própria, declarada no <code>AndroidManifest.xml</code>. Navegar = criar uma <code>Intent</code> e pedir ao sistema operacional para abrir uma nova janela/processo.</p>
+              <p>Isso gera pilha de navegação (backstack) gerenciada pelo SO, alto custo de memória por instanciar múltiplas Activities, e "Callback Hell" para passar dados de uma tela pra outra.</p>
+            </div>
+            <div>
+              <p><b>Jeito moderno (Compose + Estado):</b> existe <em>uma única</em> <code>Activity</code> (a <code>MainActivity</code>). "Navegar" é apenas trocar o valor de uma variável de estado — nenhuma Activity nova é criada.</p>
+              <p>Quando o estado muda, o Compose <b>recompõe</b>: destrói a árvore de UI antiga e monta a nova, tudo dentro do mesmo processo, em milissegundos.</p>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>MainActivity.kt</span><span>padrão usado nos 3 roteiros</span></div>
+            <pre><span class="tk">enum class</span> <span class="tt">Tela</span> { <span class="ts">MENU</span>, <span class="ts">TELA_A</span>, <span class="ts">TELA_B</span> }
+
+<span class="tk">class</span> <span class="tt">MainActivity</span> : <span class="tt">ComponentActivity</span>() {
+    <span class="tk">override fun</span> <span class="tf">onCreate</span>(savedInstanceState: <span class="tt">Bundle</span>?) {
+        <span class="tk">super</span>.<span class="tf">onCreate</span>(savedInstanceState)
+        <span class="tf">setContent</span> {
+            <span class="tk">var</span> telaAtual <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="tt">Tela</span>.MENU) }
+            <span class="tk">when</span> (telaAtual) {
+                <span class="tt">Tela</span>.MENU   -> <span class="tt">TelaMenu</span>(onNavegar = { destino -> telaAtual = destino })
+                <span class="tt">Tela</span>.TELA_A -> <span class="tt">TelaA</span>(onVoltar = { telaAtual = <span class="tt">Tela</span>.MENU })
+                <span class="tt">Tela</span>.TELA_B -> <span class="tt">TelaB</span>(onVoltar = { telaAtual = <span class="tt">Tela</span>.MENU })
+            }
+        }
+    }
+}</pre>
+          </div>
+        </article>
+
+        <article class="topic" id="composable">
+          <h3>Funções Composable <span class="topic-tag">sintaxe</span></h3>
+          <div class="topic-body">
+            <p>A anotação <code>@Composable</code> transforma uma função Kotlin comum em um "bloco de construção de UI". Três regras práticas:</p>
+          </div>
+          <table class="ref">
+            <tr><th>Regra</th><th>O que significa na prática</th></tr>
+            <tr><td>Nome em PascalCase</td><td>Por convenção, funções <code>@Composable</code> que emitem UI usam maiúscula inicial (<code>TelaMenu</code>, não <code>telaMenu</code>) — sinaliza que ela "é" um componente, não uma função utilitária comum.</td></tr>
+            <tr><td>Sem valor de retorno útil</td><td>Uma Composable não "retorna uma View", ela <em>emite</em> UI como efeito colateral controlado. Por isso o tipo de retorno normalmente é <code>Unit</code> (implícito).</td></tr>
+            <tr><td>Pode ser chamada só por outra Composable</td><td>Você não chama <code>TelaMenu()</code> de dentro de uma função Kotlin qualquer — só de dentro de <code>setContent { }</code> ou de outra função <code>@Composable</code>.</td></tr>
+          </table>
+        </article>
+
+        <article class="topic" id="estado">
+          <h3>Estado &amp; Recomposição <span class="topic-tag">o coração do compose</span></h3>
+          <div class="topic-body">
+            <p>Três peças trabalham juntas nesta linha, que você já viu nos três roteiros:</p>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>Anatomia da linha</span></div>
+            <pre><span class="tk">var</span> cliques <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">0</span>) }</pre>
+          </div>
+          <table class="ref">
+            <tr><th>Peça</th><th>Papel</th></tr>
+            <tr><td>mutableStateOf(0)</td><td>Cria um "envelope observável" contendo o valor <code>0</code>. Quando o valor de dentro muda, o Compose é <em>avisado</em> automaticamente.</td></tr>
+            <tr><td>remember { }</td><td>Sem isso, a cada recomposição a variável voltaria ao valor inicial. <code>remember</code> diz ao Compose "guarde esse envelope na memória entre recomposições, não recrie do zero".</td></tr>
+            <tr><td>by (property delegation)</td><td>Açúcar sintático do Kotlin: sem o <code>by</code>, você acessaria o valor com <code>cliques.value</code>. Com <code>by</code>, você usa <code>cliques</code> diretamente — mas exige importar <code>getValue</code>/<code>setValue</code>.</td></tr>
+          </table>
+          <div class="callout warn">
+            <span class="icon">⚠️</span>
+            <p><strong>Erro clássico:</strong> "Type mismatch: inferred type is Unit but Tela was expected". Quase sempre é falta destas duas importações no topo do arquivo:</p>
+          </div>
+          <div class="code-block">
+            <pre><span class="tk">import</span> androidx.compose.runtime.getValue
+<span class="tk">import</span> androidx.compose.runtime.setValue</pre>
+          </div>
+          <div class="callout">
+            <span class="icon">🔁</span>
+            <p><strong>Recomposição não é "redesenhar tudo".</strong> O Compose é inteligente o bastante para recompor <em>só</em> as funções Composable que realmente leem o estado que mudou — é por isso que no laboratório lá em cima, só o <code class="mono">Text</code> pisca, não a tela inteira.</p>
+          </div>
+        </article>
+
+        <article class="topic" id="state-hoisting">
+          <h3>State Hoisting <span class="topic-tag">padrão de projeto — aprofundado</span></h3>
+          <div class="topic-body">
+            <p><b>Elevação de Estado</b>: uma tela filha não deve guardar (nem saber alterar) o estado que pertence ao "dono" da navegação. Ela apenas <em>emite eventos</em> através de callbacks recebidos por parâmetro, e quem decide o que fazer é quem está um nível acima.</p>
+            <p>Isso não é uma regra estética — é a consequência direta de como a recomposição funciona (seção anterior). Vamos construir esse conceito do zero, em passos, em vez de só mostrar o resultado final.</p>
+          </div>
+
+          <h4 style="font-size:16px;color:#fff;margin-top:32px;">Passo 1 — a versão ingênua (estado "preso" dentro do Composable)</h4>
+          <div class="topic-body">
+            <p>Todo mundo começa escrevendo Composables assim: o estado nasce e morre dentro da própria função.</p>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>ContadorIngenuo.kt</span><span>funciona, mas tem um teto</span></div>
+            <pre><span class="tk">@Composable</span>
+<span class="tk">fun</span> <span class="tf">ContadorIngenuo</span>() {
+    <span class="tk">var</span> cliques <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">0</span>) }
+    <span class="tt">Column</span> {
+        <span class="tt">Text</span>(<span class="ts">"Cliques: $cliques"</span>)
+        <span class="tt">Button</span>(onClick = { cliques++ }) { <span class="tt">Text</span>(<span class="ts">"+1"</span>) }
+    }
+}</pre>
+          </div>
+          <div class="callout warn">
+            <span class="icon">⚠️</span>
+            <p><strong>Por que isso não escala:</strong> ninguém <em>fora</em> de <code class="mono">ContadorIngenuo</code> consegue ler quantos cliques houve, resetar o contador, ou reagir a uma mudança (ex: desbloquear um botão "Salvar" quando <code class="mono">cliques &gt; 0</code>). O estado está encapsulado demais — ele virou uma "caixa preta".</p>
+          </div>
+
+          <h4 style="font-size:16px;color:#fff;margin-top:32px;">Passo 2 — "elevando" o estado um nível acima</h4>
+          <div class="topic-body">
+            <p>A técnica: tire o <code class="mono">remember { mutableStateOf() }</code> de dentro do Composable e transforme-o em <b>dois parâmetros</b> — um para <em>ler</em> o valor atual, outro para <em>pedir</em> uma mudança. A função vira "burra" (stateless): ela só exibe o que recebe e avisa o que aconteceu.</p>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>Contador.kt</span><span>agora é "stateless" — não guarda nada sozinho</span></div>
+            <pre><span class="tk">@Composable</span>
+<span class="tk">fun</span> <span class="tf">Contador</span>(
+    cliques: <span class="tt">Int</span>,                    <span class="tc">// 1. LÊ o estado — não cria</span>
+    onIncrementar: () -> <span class="tt">Unit</span>          <span class="tc">// 2. PEDE uma mudança — não muda sozinho</span>
+) {
+    <span class="tt">Column</span> {
+        <span class="tt">Text</span>(<span class="ts">"Cliques: $cliques"</span>)
+        <span class="tt">Button</span>(onClick = onIncrementar) { <span class="tt">Text</span>(<span class="ts">"+1"</span>) }
+    }
+}</pre>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>MainActivity.kt (ou tela pai)</span><span>quem chama agora É o dono do estado</span></div>
+            <pre><span class="tk">var</span> cliques <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">0</span>) }
+
+<span class="tt">Contador</span>(
+    cliques = cliques,
+    onIncrementar = { cliques++ }   <span class="tc">// a decisão de COMO mudar fica aqui</span>
+)</pre>
+          </div>
+          <div class="callout tip">
+            <span class="icon">💡</span>
+            <p><strong>O que ganhamos:</strong> agora quem chama <code class="mono">Contador</code> pode ler <code class="mono">cliques</code> a qualquer momento, resetar (<code class="mono">cliques = 0</code>), limitar (<code class="mono">if (cliques &lt; 10) cliques++</code>), ou até ligar o mesmo <code class="mono">Contador</code> a duas fontes de estado diferentes em telas diferentes. A função virou reutilizável porque parou de tomar decisões sozinha.</p>
+          </div>
+
+          <h4 style="font-size:16px;color:#fff;margin-top:32px;">Fluxo Unidirecional de Dados (UDF)</h4>
+          <div class="topic-body"><p>Esse padrão "valor desce, evento sobe" tem nome — é a mesma ideia por trás do <code class="mono">value</code> / <code class="mono">onValueChange</code> de todo <code>TextField</code> que você já usou:</p></div>
+          <div class="diagram">
+            <div class="dtitle">state ↓ desce · event ↑ sobe</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:26px;padding:18px 6px;">
+              <div style="text-align:center;">
+                <div class="fake-card" style="width:140px;">MainActivity<br><span class="fake-text small">(dono do estado)</span></div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:10px;font-family:'JetBrains Mono';font-size:12px;">
+                <span style="color:var(--android);">cliques: Int ↓</span>
+                <span style="color:var(--amber);">onIncrementar ↑</span>
+              </div>
+              <div style="text-align:center;">
+                <div class="fake-card" style="width:140px;">Contador<br><span class="fake-text small">(exibe e avisa)</span></div>
+              </div>
+            </div>
+          </div>
+
+          <h4 style="font-size:16px;color:#fff;margin-top:32px;">Escolhas técnicas: até onde elevar?</h4>
+          <div class="topic-body">
+            <p>Um erro comum de quem acabou de aprender State Hoisting é achar que <em>todo</em> estado deve subir até a <code>MainActivity</code>. Não deve. A regra é: <b>eleve o estado até o "ancestral comum" mais baixo que realmente precisa dele</b> — nem mais, nem menos.</p>
+          </div>
+          <table class="ref">
+            <tr><th>Estado</th><th>Onde deve morar</th><th>Por quê</th></tr>
+            <tr><td>telaAtual (navegação)</td><td>MainActivity</td><td>Toda tela do <code class="mono">when</code> depende dele — é literalmente o ancestral comum de todas.</td></tr>
+            <tr><td>peso / altura (TelaIMC)</td><td>dentro da própria TelaIMC</td><td>Nenhuma outra tela do app precisa saber o peso digitado. Subir isso até a MainActivity só adicionaria parâmetros inúteis no caminho todo.</td></tr>
+            <tr><td>"dropdown está aberto?"</td><td>dentro do próprio componente do dropdown</td><td>É detalhe de apresentação puramente local — nenhuma regra de negócio depende disso.</td></tr>
+          </table>
+          <div class="callout">
+            <span class="icon">🧭</span>
+            <p><strong>Pergunta-guia:</strong> "quem <em>além</em> de mim precisa ler ou reagir a este valor?". Se a resposta é "ninguém", o estado fica local com <code class="mono">remember</code>. Se a resposta é "meu componente irmão também precisa", suba até o pai comum dos dois — e pare ali.</p>
+          </div>
+
+          <h4 style="font-size:16px;color:#fff;margin-top:32px;">Padrão Stateful / Stateless (opcional, mas comum em código real)</h4>
+          <div class="topic-body">
+            <p>Em projetos maiores é comum ver <em>dois</em> Composables para a mesma tela: um "Stateful" (dono do estado, chamado pela Activity) e um "Stateless" (recebe tudo por parâmetro, fácil de testar e de dar <code>@Preview</code>). Aplicando isso ao <code class="mono">TelaAgua</code> do roteiro de saúde:</p>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>Versão stateful — a que a MainActivity chama</span></div>
+            <pre><span class="tk">@Composable</span>
+<span class="tk">fun</span> <span class="tf">TelaAgua</span>(onVoltar: () -> <span class="tt">Unit</span>) {
+    <span class="tk">var</span> copos <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">0</span>) }
+    <span class="tt">TelaAguaConteudo</span>(
+        copos = copos,
+        onBeberCopo = { copos++ },
+        onVoltar = onVoltar
+    )
+}</pre>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>Versão stateless — a que você testa e prevê isoladamente</span></div>
+            <pre><span class="tk">@Composable</span>
+<span class="tk">fun</span> <span class="tf">TelaAguaConteudo</span>(
+    copos: <span class="tt">Int</span>,
+    onBeberCopo: () -> <span class="tt">Unit</span>,
+    onVoltar: () -> <span class="tt">Unit</span>
+) {
+    <span class="tt">Column</span> {
+        <span class="tt">Text</span>(<span class="ts">"Total: ${copos * 250}ml"</span>)
+        <span class="tt">Button</span>(onClick = onBeberCopo) { <span class="tt">Text</span>(<span class="ts">"Beber 1 Copo"</span>) }
+        <span class="tt">OutlinedButton</span>(onClick = onVoltar) { <span class="tt">Text</span>(<span class="ts">"Voltar"</span>) }
+    }
+}
+
+<span class="tk">@Preview</span>(showBackground = <span class="ts">true</span>)
+<span class="tk">@Composable</span>
+<span class="tk">fun</span> <span class="tf">TelaAguaPreview</span>() {
+    <span class="tc">// preview usa dados fixos — não precisa de estado real</span>
+    <span class="tt">TelaAguaConteudo</span>(copos = <span class="ts">4</span>, onBeberCopo = {}, onVoltar = {})
+}</pre>
+          </div>
+          <div class="callout warn">
+            <span class="icon">⚖️</span>
+            <p><strong>Trade-off honesto:</strong> separar em duas funções deixa o código mais testável e mais fácil de dar Preview com dados fixos — mas também dobra o número de funções e de parâmetros para manter em sincronia. Para os desafios dos roteiros (escopo pequeno, sem testes automatizados), <b>uma única função com State Hoisting simples já é suficiente</b> — o padrão Stateful/Stateless compensa mais em telas grandes ou em projetos com testes unitários de UI.</p>
+          </div>
+
+          <div class="callout tip">
+            <span class="icon">💡</span>
+            <p><strong>Regra prática para os roteiros:</strong> se uma função Composable recebe <code>onAlgumaCoisa: () -> Unit</code> como parâmetro, isso é State Hoisting em ação — ela "sobe" a responsabilidade da decisão para quem a chamou.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="fundamentos-2">
+      <div class="container">
+        <article class="topic" id="navegacao" style="margin-top:0;">
+          <h3>Navegação com Enum + when <span class="topic-tag">padrão de projeto</span></h3>
+          <div class="topic-body">
+            <p>Sem bibliotecas de navegação (como o Navigation Component), um <code>enum class</code> funciona como o "mapa de rotas" do app, e a expressão <code>when</code> na <code>MainActivity</code> funciona como o "roteador": para cada rota possível, decide qual Composable desenhar.</p>
+          </div>
+          <div class="callout">
+            <span class="icon">🗺️</span>
+            <p>É exatamente o padrão usado nos três roteiros: <code class="mono">TelaSaude</code>, <code class="mono">TelaFinanceira</code> e <code class="mono">Tela</code> (miniaplicativos) — mesmo mecanismo, nomes diferentes.</p>
+          </div>
+        </article>
+
+        <article class="topic" id="modifiers">
+          <h3>Modifiers <span class="topic-tag">sintaxe</span></h3>
+          <div class="topic-body">
+            <p><code>Modifier</code> é como você decora e posiciona um Composable — tamanho, padding, fundo, clique, etc. — sem criar um parâmetro novo pra cada característica visual. Pense nele como uma cadeia de instruções aplicadas em ordem.</p>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>A ordem importa</span></div>
+            <pre><span class="tt">Modifier</span>
+    .<span class="tf">padding</span>(<span class="ts">16</span>.dp)     <span class="tc">// 1. respiro por fora, depois</span>
+    .<span class="tf">background</span>(<span class="tt">Color</span>.<span class="ts">Blue</span>) <span class="tc">// 2. pinta o que sobrou</span>
+    .<span class="tf">fillMaxWidth</span>()      <span class="tc">// 3. ocupa a largura disponível</span></pre>
+          </div>
+          <div class="callout warn">
+            <span class="icon">⚠️</span>
+            <p>Trocar a ordem muda o resultado visual: <code class="mono">.background().padding()</code> pinta a área toda antes de abrir espaço; <code class="mono">.padding().background()</code> pinta só a área já reduzida. Sempre leia um <code>Modifier</code> de cima para baixo, como uma receita.</p>
+          </div>
+
+          <div class="two-col">
+            <div>
+              <div class="diagram">
+                <div class="dtitle">.padding(16.dp).background(azul)</div>
+                <div style="height:110px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.02);border:1px dashed var(--border);border-radius:6px;padding:22px;">
+                  <div style="width:100%;height:100%;background:var(--kotlin);border-radius:4px;"></div>
+                </div>
+              </div>
+              <p class="topic-body" style="font-size:13.5px;margin-top:8px;">O espaço em volta fica <em>sem</em> cor — o padding "empurrou" a área antes de pintar.</p>
+            </div>
+            <div>
+              <div class="diagram">
+                <div class="dtitle">.background(azul).padding(16.dp)</div>
+                <div style="height:110px;display:flex;align-items:center;justify-content:center;background:var(--kotlin);border-radius:6px;padding:22px;">
+                  <div style="width:100%;height:100%;border:1px dashed rgba(255,255,255,.4);border-radius:4px;"></div>
+                </div>
+              </div>
+              <p class="topic-body" style="font-size:13.5px;margin-top:8px;">A cor pinta a área toda primeiro — o padding só empurra o <em>conteúdo</em> de dentro.</p>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>Combo comum nos roteiros</span></div>
+            <pre><span class="tt">Modifier</span>
+    .<span class="tf">fillMaxSize</span>()               <span class="tc">// ocupa a tela toda</span>
+    .<span class="tf">padding</span>(<span class="ts">24</span>.dp)             <span class="tc">// respiro nas bordas da tela</span>
+    .<span class="tf">verticalScroll</span>(<span class="tf">rememberScrollState</span>()) <span class="tc">// rola se o conteúdo não couber</span></pre>
+          </div>
+        </article>
+
+        <article class="topic" id="layouts">
+          <h3>Layouts: Column, Row e Box <span class="topic-tag">componentes estruturais</span></h3>
+          <div class="topic-body">
+            <p>Os três "contêineres" que você usa em praticamente toda tela dos roteiros:</p>
+          </div>
+          <table class="ref">
+            <tr><th>Container</th><th>Empilha</th><th>Quando usar</th></tr>
+            <tr><td>Column</td><td>de cima para baixo</td><td>Formulários, menus com botões empilhados — o mais usado nos roteiros.</td></tr>
+            <tr><td>Row</td><td>da esquerda para direita</td><td>Grupos de botões lado a lado, um rótulo ao lado de um valor.</td></tr>
+            <tr><td>Box</td><td>uns sobre os outros (empilhamento em Z)</td><td>Sobrepor elementos — um badge no canto de um card, por exemplo.</td></tr>
+          </table>
+
+          <div class="topic-body"><p><b>Arrangement</b> controla o espaçamento no eixo principal (vertical numa Column, horizontal numa Row). <b>Alignment</b> controla o eixo cruzado. Veja a diferença visualmente:</p></div>
+          <div class="diagram-row">
+            <div class="diagram">
+              <div class="dtitle">Arrangement.Center</div>
+              <div class="diagram-box col centerc"><div class="chip">A</div><div class="chip">B</div><div class="chip">C</div></div>
+            </div>
+            <div class="diagram">
+              <div class="dtitle">Arrangement.SpaceBetween</div>
+              <div class="diagram-box col spacebetween"><div class="chip">A</div><div class="chip">B</div><div class="chip">C</div></div>
+            </div>
+            <div class="diagram">
+              <div class="dtitle">Arrangement.SpaceAround</div>
+              <div class="diagram-box col spacearound"><div class="chip">A</div><div class="chip">B</div><div class="chip">C</div></div>
+            </div>
+          </div>
+          <div class="callout tip">
+            <span class="icon">💡</span>
+            <p>No boilerplate dos roteiros você sempre vê <code class="mono">horizontalAlignment = Alignment.CenterHorizontally</code> junto com <code class="mono">verticalArrangement = Arrangement.Center</code> numa <code>Column</code> — é exatamente essa combinação que centraliza o menu inteiro na tela, tanto na vertical quanto na horizontal.</p>
+          </div>
+        </article>
+
+        <article class="topic" id="componentes">
+          <h3>Componentes Visuais <span class="topic-tag">galeria</span></h3>
+          <div class="topic-body"><p>Os blocos de UI prontos do Compose que aparecem nos três roteiros:</p></div>
+          <div class="gallery">
+            <div class="gcard">
+              <div class="gname">Text</div>
+              <div class="gdemo"><span class="fake-text">Hub de Exercícios</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">Button</div>
+              <div class="gdemo"><span class="fake-btn">Calcular</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">OutlinedButton</div>
+              <div class="gdemo"><span class="fake-outline-btn">Voltar ao Menu</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">OutlinedTextField</div>
+              <div class="gdemo" style="width:100%;"><span class="fake-field focus">70.5</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">Spacer</div>
+              <div class="gdemo"><span class="fake-text small">altura reservada, sem conteúdo</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">Card</div>
+              <div class="gdemo" style="width:100%;"><span class="fake-card">conteúdo agrupado com elevação</span></div>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>Exemplo combinado — típico dos desafios</span></div>
+            <pre><span class="tk">var</span> peso <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">""</span>) }
+
+<span class="tt">OutlinedTextField</span>(
+    value = peso,
+    onValueChange = { novoTexto -> peso = novoTexto },
+    label = { <span class="tt">Text</span>(<span class="ts">"Peso em Kg"</span>) }
+)</pre>
+          </div>
+          <div class="callout error">
+            <span class="icon">🐞</span>
+            <p><strong>Erro clássico: "o campo não atualiza enquanto digito".</strong> Falta a linkagem bidirecional — o <code class="mono">value</code> precisa vir da variável de estado <em>e</em> o <code class="mono">onValueChange</code> precisa atualizar essa mesma variável. Se um dos dois lados estiver quebrado (ex: <code class="mono">onValueChange = {}</code> vazio), o campo trava.</p>
+          </div>
+
+          <h4 style="font-size:16px;color:#fff;margin-top:36px;">Além dos roteiros: componentes comuns no mercado</h4>
+          <div class="topic-body">
+            <p>Os roteiros usam o essencial para focar em estado e navegação — mas num app real (ou numa entrevista técnica) esses aparecem o tempo todo:</p>
+          </div>
+          <div class="gallery">
+            <div class="gcard">
+              <div class="gname">Checkbox</div>
+              <div class="gdemo"><span class="fake-checkbox">✓</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">RadioButton</div>
+              <div class="gdemo"><span class="fake-radio"><span class="dot"></span></span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">Switch</div>
+              <div class="gdemo"><span class="fake-switch"><span class="knob"></span></span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">Icon / IconButton</div>
+              <div class="gdemo"><span class="fake-icon">⚙</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">FloatingActionButton</div>
+              <div class="gdemo"><span class="fake-fab">+</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">AssistChip</div>
+              <div class="gdemo"><span class="fake-chip">🏷 Filtro</span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">Divider / HorizontalDivider</div>
+              <div class="gdemo" style="width:100%;"><span class="fake-divider"></span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">LinearProgressIndicator</div>
+              <div class="gdemo" style="width:100%;"><span class="fake-progress-linear"><span class="fill"></span></span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">CircularProgressIndicator</div>
+              <div class="gdemo"><span class="fake-progress-circular"></span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">TopAppBar</div>
+              <div class="gdemo" style="width:100%;"><span class="fake-topbar"><span>← Dashboard</span><span>⋮</span></span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">NavigationBar (bottom nav)</div>
+              <div class="gdemo" style="width:100%;"><span class="fake-bottomnav"><span class="item active">🏠 Início</span><span class="item">📊 Relatórios</span><span class="item">👤 Perfil</span></span></div>
+            </div>
+            <div class="gcard">
+              <div class="gname">LazyColumn (item)</div>
+              <div class="gdemo" style="width:100%;"><span class="fake-list"><span class="row">Item 01</span><span class="row">Item 02</span></span></div>
+            </div>
+          </div>
+
+          <div class="topic-body" style="margin-top:24px;"><p>Três desses merecem código, porque resolvem problemas estruturais que os componentes dos roteiros não cobrem:</p></div>
+
+          <table class="ref">
+            <tr><th>Componente</th><th>Problema que resolve</th></tr>
+            <tr><td>LazyColumn</td><td>Uma <code class="mono">Column</code> comum desenha <em>todos</em> os itens de uma vez, mesmo os fora da tela — péssimo para listas longas. A <code class="mono">LazyColumn</code> só compõe o que está visível (como o RecyclerView do XML, mas declarativo).</td></tr>
+            <tr><td>Scaffold + TopAppBar</td><td>Padroniza o "esqueleto" de tela — barra superior, FAB, navegação inferior — sem você posicionar cada peça manualmente com Modifiers.</td></tr>
+            <tr><td>AlertDialog</td><td>Pop-up modal para confirmações destrutivas ("Excluir item?") — foge do fluxo normal de "quem chama decide" (State Hoisting) porque decide se aparece ou não com base num booleano de estado.</td></tr>
+          </table>
+
+          <div class="code-block">
+            <div class="cb-head"><span>LazyColumn — a versão performática de uma lista</span></div>
+            <pre><span class="tk">val</span> exercicios = <span class="tf">listOf</span>(<span class="ts">"Contador"</span>, <span class="ts">"Conversor"</span>, <span class="ts">"Dado"</span>)
+
+<span class="tt">LazyColumn</span> {
+    <span class="tf">items</span>(exercicios) { nome ->
+        <span class="tt">Text</span>(text = nome, modifier = <span class="tt">Modifier</span>.padding(<span class="ts">12</span>.dp))
+    }
+}</pre>
+          </div>
+          <div class="callout tip">
+            <span class="icon">💡</span>
+            <p><strong>Quando trocar Column por LazyColumn:</strong> se a lista tem tamanho fixo e pequeno (ex: 3 botões do menu), <code class="mono">Column</code> normal é mais simples e suficiente. Se a lista vem de uma API, banco de dados, ou pode crescer sem limite (histórico de cliques, resultados de busca), use <code class="mono">LazyColumn</code>.</p>
+          </div>
+
+          <div class="code-block">
+            <div class="cb-head"><span>Scaffold — o "esqueleto" padrão de tela</span></div>
+            <pre><span class="tt">Scaffold</span>(
+    topBar = { <span class="tt">TopAppBar</span>(title = { <span class="tt">Text</span>(<span class="ts">"Dashboard Financeiro"</span>) }) },
+    floatingActionButton = {
+        <span class="tt">FloatingActionButton</span>(onClick = { <span class="tc">/* nova transação */</span> }) {
+            <span class="tt">Icon</span>(<span class="tf">Icons.Default</span>.Add, contentDescription = <span class="ts">"Adicionar"</span>)
+        }
+    }
+) { paddingInterno ->
+    <span class="tt">Column</span>(modifier = <span class="tt">Modifier</span>.padding(paddingInterno)) {
+        <span class="tc">// conteúdo da tela entra aqui</span>
+    }
+}</pre>
+          </div>
+          <div class="callout warn">
+            <span class="icon">⚠️</span>
+            <p><strong>Detalhe que gera bug comum:</strong> o <code class="mono">Scaffold</code> entrega um <code class="mono">paddingInterno</code> no lambda de conteúdo — ele existe para o conteúdo não ficar escondido atrás da TopAppBar. Esquecer de aplicar esse padding (ou aplicar em cima de outro <code class="mono">Modifier.padding</code> conflitante) é a causa mais comum de "meu botão sumiu atrás da barra".</p>
+          </div>
+
+          <div class="two-col">
+            <div class="code-block">
+              <div class="cb-head"><span>AlertDialog — controlado por estado</span></div>
+              <pre><span class="tk">var</span> mostrarDialogo <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">false</span>) }
+
+<span class="tk">if</span> (mostrarDialogo) {
+    <span class="tt">AlertDialog</span>(
+        onDismissRequest = { mostrarDialogo = <span class="ts">false</span> },
+        title = { <span class="tt">Text</span>(<span class="ts">"Excluir?"</span>) },
+        confirmButton = {
+            <span class="tt">TextButton</span>(onClick = { mostrarDialogo = <span class="ts">false</span> }) {
+                <span class="tt">Text</span>(<span class="ts">"Confirmar"</span>)
+            }
+        }
+    )
+}</pre>
+            </div>
+            <div>
+              <div class="diagram">
+                <div class="dtitle">Preview visual</div>
+                <div style="padding:10px 4px;">
+                  <div class="fake-dialog">
+                    <div class="dtitle2">Excluir?</div>
+                    <div class="fake-text small">Essa ação não pode ser desfeita.</div>
+                    <div class="dactions"><span>Cancelar</span><span>Confirmar</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="icon">🔗</span>
+            <p>Repare que o <code class="mono">AlertDialog</code> segue exatamente o mesmo raciocínio de <a href="#state-hoisting">State Hoisting</a> visto antes: um booleano guarda "deve aparecer ou não", e o próprio diálogo pede pra fechar via <code class="mono">onDismissRequest</code> — ele não se fecha sozinho, só avisa a intenção.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="fundamentos-3">
+      <div class="container">
+        <article class="topic" id="preview" style="margin-top:0;">
+          <h3>Usando o Preview <span class="topic-tag">produtividade no IDE</span></h3>
+          <div class="topic-body">
+            <p>Compilar o app inteiro e abrir o emulador só para ver se um botão ficou bem posicionado é lento. A anotação <code>@Preview</code> resolve isso: renderiza aquela função Composable isoladamente, direto no Android Studio.</p>
+          </div>
+          <div class="code-block">
+            <pre><span class="tk">@Preview</span>(showBackground = <span class="ts">true</span>)
+<span class="tk">@Composable</span>
+<span class="tk">fun</span> <span class="tf">TelaMenuPreview</span>() {
+    <span class="tt">TelaMenu</span>(onNavegar = {})
+}</pre>
+          </div>
+          <div class="ide-mock">
+            <div class="ide-top">
+              <div class="ide-tab active">Code</div>
+              <div class="ide-tab">Split</div>
+              <div class="ide-tab">Design</div>
+            </div>
+            <div class="ide-split">
+              <div class="side code">@Preview(showBackground = true)<br>@Composable<br>fun TelaMenuPreview() {<br>&nbsp;&nbsp;TelaMenu(onNavegar = {})<br>}</div>
+              <div class="side preview">
+                <div style="text-align:center;">
+                  <div class="fake-text" style="font-weight:700;margin-bottom:14px;">Hub de Exercícios</div>
+                  <div class="fake-btn" style="margin-bottom:8px;">1. Contador</div><br>
+                  <div class="fake-btn" style="background:var(--android);color:#0d0f16;">2. Conversor</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="callout tip">
+            <span class="icon">💡</span>
+            <p><strong>Onde clicar:</strong> aba <b>Split</b> no canto superior direito do editor — mostra código e preview lado a lado. Toda alteração salva no código atualiza o preview quase instantaneamente, sem passar pelo emulador.</p>
+          </div>
+          <div class="callout warn">
+            <span class="icon">⚠️</span>
+            <p><strong>Limitação importante:</strong> o Preview "estático" não executa cliques nem lógica real — para isso existe o <b>Interactive Mode</b> (ícone de "play" dentro do próprio preview), que simula toques sem precisar do emulador completo. Ainda assim, chamadas de rede, sensores ou permissões exigem o emulador/dispositivo de verdade.</p>
+          </div>
+        </article>
+
+        <article class="topic" id="seguranca">
+          <h3>Segurança de Tipos <span class="topic-tag">boas práticas kotlin</span></h3>
+          <div class="topic-body">
+            <p>Todo campo de texto do Compose entrega uma <code>String</code> — mesmo quando o usuário digita números. Converter essa <code>String</code> de forma insegura é a causa nº 1 de crash nos desafios práticos.</p>
+          </div>
+          <div class="two-col">
+            <div class="code-block">
+              <div class="cb-head"><span style="color:var(--red);">❌ inseguro</span></div>
+              <pre><span class="tk">val</span> pesoNum = peso.<span class="tf">toDouble</span>()
+<span class="tc">// crasha se peso == ""</span></pre>
+            </div>
+            <div class="code-block">
+              <div class="cb-head"><span style="color:var(--android);">✅ seguro</span></div>
+              <pre><span class="tk">val</span> pesoNum = peso.<span class="tf">toDoubleOrNull</span>() ?: <span class="ts">0.0</span>
+<span class="tc">// campo vazio -> 0.0, sem crash</span></pre>
+            </div>
+          </div>
+          <div class="topic-body">
+            <p><code>toDoubleOrNull()</code> retorna <code>null</code> em vez de lançar exceção quando a conversão falha. O operador Elvis <code>?:</code> completa a frase: "e se der <code>null</code>, use este valor padrão". É o mesmo padrão em todos os três roteiros (IMC, juros compostos, conversor de temperatura).</p>
+          </div>
+        </article>
+
+        <article class="topic" id="build-errors">
+          <h3>Erros de Build: AAR Metadata <span class="topic-tag">troubleshooting</span></h3>
+          <div class="topic-body">
+            <p>Esse erro não é sobre o seu código Kotlin — é sobre versões de dependências não baterem com o SDK configurado no projeto.</p>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span style="color:var(--red);">Erro no Android Studio</span></div>
+            <pre>5 issues were found when checking AAR metadata:
+  - Dependency 'androidx.activity:activity-compose:1.12.0' requires
+    libraries and applications that depend on it to compile against
+    version 36 or later of the Android APIs.
+    :app is currently compiled against android-35.</pre>
+          </div>
+          <div class="topic-body">
+            <p><b>Por quê:</b> bibliotecas recentes usam recursos da API 36. O Gradle vê que seu <code>compileSdk</code> está em 35 e bloqueia a build por segurança — o app poderia chamar código que o SDK 35 nem conhece.</p>
+            <p><b>Como resolver (estabilidade > versão mais nova):</b> em vez de subir para a API 36 — que pode estar em fase Preview/Beta e instável — faça o <em>downgrade</em> das dependências no <code>gradle/libs.versions.toml</code> para versões 100% compatíveis com a API 35.</p>
+          </div>
+          <div class="code-block">
+            <div class="cb-head"><span>gradle/libs.versions.toml</span></div>
+            <pre>[versions]
+coreKtx = <span class="ts">"1.15.0"</span>            <span class="tc"># reduzido para consistência com SDK 35</span>
+lifecycleRuntimeKtx = <span class="ts">"2.8.7"</span>  <span class="tc"># reduzido</span>
+activityCompose = <span class="ts">"1.9.3"</span>      <span class="tc"># compatível com SDK 35</span>
+composeBom = <span class="ts">"2024.09.00"</span></pre>
+          </div>
+          <div class="callout">
+            <span class="icon">🔨</span>
+            <p>Depois de editar o TOML, clique em <b>Sync Now</b> (ícone do elefante com a seta azul, no topo do editor) para o Gradle reprocessar as dependências.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="casos">
+      <div class="container">
+        <div class="section-kicker">Parte 2</div>
+        <h2 style="font-size:34px;color:#fff;">Os 3 roteiros na prática</h2>
+        <p class="section-intro">Mesma arquitetura, três domínios diferentes. Veja onde cada conceito acima aparece em cada roteiro.</p>
+
+        <div class="cs-tabs">
+          <button class="cs-tab-btn active" data-target="cs-mini">Hub de Miniaplicativos</button>
+          <button class="cs-tab-btn" data-target="cs-fin">Dashboard Financeiro</button>
+          <button class="cs-tab-btn" data-target="cs-saude">Hub de Saúde</button>
+        </div>
+
+        <div class="cs-panel active" id="cs-mini">
+          <div class="cs-meta">
+            <span class="cs-pill">enum Tela</span>
+            <span class="cs-pill">3 mini-apps: Contador, Conversor, Dado</span>
+            <span class="cs-pill">nível: introdutório</span>
+          </div>
+          <p>A atividade mais guiada das três: entrega o menu completo, um mini-app 100% resolvido (<code>TelaContador</code>) como modelo, e ensina a criar <em>stubs</em> vazios para não travar a compilação antes dos desafios.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>Stub — técnica anti-erro de compilação</span></div>
+            <pre><span class="tk">@Composable fun</span> <span class="tf">TelaConversor</span>(onVoltar: () -> <span class="tt">Unit</span>) { <span class="tc">/* Desafio 1 */</span> }
+<span class="tk">@Composable fun</span> <span class="tf">TelaDado</span>(onVoltar: () -> <span class="tt">Unit</span>) { <span class="tc">/* Desafio 2 */</span> }</pre>
+          </div>
+          <p><b>Desafio Conversor:</b> aplica <a href="#seguranca">segurança de tipos</a> (<code class="mono">toDoubleOrNull()</code>) na fórmula <code class="mono">F = (C * 1.8) + 32</code>. <b>Desafio Dado:</b> introduz <code class="mono">(1..6).random()</code> e um <code>if</code> dentro de Composable para o bônus do "6 comemorativo".</p>
+        </div>
+
+        <div class="cs-panel" id="cs-fin">
+          <div class="cs-meta">
+            <span class="cs-pill">enum TelaFinanceira</span>
+            <span class="cs-pill">Juros Compostos + Conversor de Moedas</span>
+            <span class="cs-pill">nível: intermediário</span>
+          </div>
+          <p>É a única com a seção "Transição Histórica" (<a href="#single-activity">XML+Intents vs. Compose+State</a>) por escrito, e a única com um Troubleshooting Guide dedicado a erros de código — não só de build.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>State Hoisting na tela de resumo</span></div>
+            <pre><span class="tk">@Composable</span>
+<span class="tk">fun</span> <span class="tf">TelaResumo</span>(onNavegar: (<span class="tt">TelaFinanceira</span>) -> <span class="tt">Unit</span>) {
+    <span class="tt">Button</span>(onClick = { <span class="tf">onNavegar</span>(<span class="tt">TelaFinanceira</span>.JUROS_COMPOSTOS) }) {
+        <span class="tt">Text</span>(<span class="ts">"Calculadora de Juros"</span>)
+    }
+}</pre>
+          </div>
+          <p><b>Desafio Juros:</b> três campos de estado independentes (Capital, Taxa, Tempo) e a fórmula <code class="mono">M = C * (1 + i)^t</code> com <code class="mono">kotlin.math.pow</code>. <b>Desafio Conversor:</b> taxas fixas de câmbio — bom terreno para depois discutir "e se a taxa fosse um estado editável?".</p>
+        </div>
+
+        <div class="cs-panel" id="cs-saude">
+          <div class="cs-meta">
+            <span class="cs-pill">enum TelaSaude</span>
+            <span class="cs-pill">Calculadora de IMC + Meta de Água</span>
+            <span class="cs-pill">nível: intermediário/autônomo</span>
+          </div>
+          <p>A única que aborda <a href="#build-errors">Troubleshooting de Build (AAR Metadata)</a> — o erro de <code>compileSdk</code> — em vez de erros de lógica de código. Boa oportunidade para o aluno aprender a ler mensagens de erro do Gradle, não só do compilador Kotlin.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>Desafio IMC</span></div>
+            <pre><span class="tk">val</span> imc = peso / (altura * altura)
+<span class="tc">// exibir com 2 casas decimais</span>
+<span class="tc">// peso e altura via toDoubleOrNull() ?: 0.0</span></pre>
+          </div>
+          <p><b>Desafio Água:</b> contador simples (estado inicial 0) que multiplica por 250ml a cada clique — reforça <a href="#estado">estado numérico + recomposição</a> sem a complexidade de parsing de texto.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="cheatsheet">
+      <div class="container">
+        <div class="section-kicker">Referência rápida</div>
+        <h2 style="font-size:34px;color:#fff;">Cheatsheet &amp; Glossário</h2>
+        <table class="ref">
+          <tr><th>Termo</th><th>Definição curta</th></tr>
+          <tr><td>@Composable</td><td>Marca uma função como capaz de emitir UI.</td></tr>
+          <tr><td>remember { }</td><td>Preserva um valor entre recomposições (sem isso, ele reseta).</td></tr>
+          <tr><td>mutableStateOf(x)</td><td>Cria um valor observável — muda ele, o Compose recompõe quem lê.</td></tr>
+          <tr><td>by (delegation)</td><td>Permite usar <code class="mono">variavel</code> em vez de <code class="mono">variavel.value</code>.</td></tr>
+          <tr><td>Recomposição</td><td>Reexecução das funções Composable que leem um estado que mudou.</td></tr>
+          <tr><td>State Hoisting</td><td>Padrão: a tela filha só emite eventos (callbacks), não guarda o estado do "pai".</td></tr>
+          <tr><td>Modifier</td><td>Cadeia de instruções de estilo/comportamento aplicada a um Composable, em ordem.</td></tr>
+          <tr><td>Arrangement</td><td>Espaçamento no eixo principal (vertical em Column, horizontal em Row).</td></tr>
+          <tr><td>Alignment</td><td>Posicionamento no eixo cruzado.</td></tr>
+          <tr><td>toDoubleOrNull() ?: x</td><td>Conversão segura de String para número, com valor padrão se falhar.</td></tr>
+          <tr><td>@Preview</td><td>Renderiza uma Composable isolada no Android Studio, sem emulador.</td></tr>
+          <tr><td>AAR Metadata error</td><td>Dependência exige um <code>compileSdk</code> mais novo do que o configurado no projeto.</td></tr>
+          <tr><td>LazyColumn</td><td>Lista que só compõe os itens visíveis na tela — versão performática da Column para listas longas.</td></tr>
+          <tr><td>Scaffold</td><td>Esqueleto padrão de tela (TopAppBar, FAB, bottom nav) que já organiza o espaçamento entre essas peças.</td></tr>
+          <tr><td>AlertDialog</td><td>Pop-up modal controlado por um booleano de estado — segue o mesmo princípio do State Hoisting.</td></tr>
+        </table>
+      </div>
+    </section>
+
+
+    <footer>
+      <div class="container">
+        <p>Material de apoio para as atividades de Hub de Saúde, Dashboard Financeiro e Hub de Miniaplicativos — Jetpack Compose / Kotlin.</p>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script>
+// mobile sidebar
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('menuToggle');
+toggle && toggle.addEventListener('click', ()=> sidebar.classList.toggle('open'));
+document.querySelectorAll('.sidebar a').forEach(a=>a.addEventListener('click', ()=> sidebar.classList.remove('open')));
+
+// active link on scroll
+const links = document.querySelectorAll('.sidebar a[href^="#"]');
+const targets = Array.from(links).map(l=>document.querySelector(l.getAttribute('href'))).filter(Boolean);
+function onScroll(){
+  let current = targets[0];
+  const y = window.scrollY + 120;
+  targets.forEach(t=>{ if(t.offsetTop <= y) current = t; });
+  links.forEach(l=>l.classList.toggle('active', l.getAttribute('href') === '#'+current.id));
+}
+window.addEventListener('scroll', onScroll); onScroll();
+
+// recomposition lab
+let count = 0, recomps = 0;
+const labCount = document.getElementById('labCount');
+const labCounter = document.getElementById('labCounter');
+const hlText = document.getElementById('hlText');
+const hlLambda = document.getElementById('hlLambda');
+document.getElementById('labBtn').addEventListener('click', ()=>{
+  count++; recomps++;
+  labCount.textContent = count;
+  labCounter.textContent = recomps;
+  labCount.classList.add('pulse');
+  hlText.classList.add('flash'); hlLambda.classList.add('flash');
+  setTimeout(()=>{
+    labCount.classList.remove('pulse');
+    hlText.classList.remove('flash'); hlLambda.classList.remove('flash');
+  }, 320);
+});
+
+// case study tabs
+document.querySelectorAll('.cs-tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const target = btn.dataset.target;
+    document.querySelectorAll('.cs-tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.cs-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(target).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
