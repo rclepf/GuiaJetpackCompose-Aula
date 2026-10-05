@@ -330,8 +330,8 @@ footer p{font-size:13px;color:var(--text-dim);}
     </div>
 
     <div class="nav-group">
-      <div class="nav-group-title">Estudos de Caso</div>
-      <a href="#casos">Os 3 Roteiros na Prática</a>
+      <div class="nav-group-title">Revisão</div>
+      <a href="#revisao">Revisão Rápida: 5 Perguntas</a>
     </div>
 
     <div class="nav-group">
@@ -346,7 +346,7 @@ footer p{font-size:13px;color:var(--text-dim);}
       <div class="container">
         <div class="eyebrow">● jetpack compose · single-activity architecture</div>
         <h1>Tudo é <em>função do estado</em>. Aprenda a montar telas mudando variáveis, não Activities.</h1>
-        <p class="lead">Guia de referência para quem está construindo hubs de mini-apps em Compose: os conceitos, os componentes visuais e o porquê de cada linha de código — com os três roteiros da turma como estudo de caso.</p>
+        <p class="lead">Guia de referência para quem está construindo apps em Compose: os conceitos, os componentes visuais e o porquê de cada linha de código.</p>
 
         <div class="lab">
           <div class="lab-bar">
@@ -380,7 +380,7 @@ footer p{font-size:13px;color:var(--text-dim);}
       <div class="container">
         <div class="section-kicker">Parte 1</div>
         <h2 style="font-size:34px;color:#fff;">Fundamentos do Compose</h2>
-        <p class="section-intro">Antes dos desafios, vale entender por que o Compose funciona do jeito que funciona. Cada tópico abaixo é a peça de teoria por trás de uma linha que você já escreveu (ou vai escrever) nos roteiros.</p>
+        <p class="section-intro">Antes de praticar, vale entender por que o Compose funciona do jeito que funciona. Cada tópico abaixo é a peça de teoria por trás de uma linha que você vai escrever em qualquer app Compose.</p>
 
         <article class="topic" id="declarativo">
           <h3>Declarativo <span class="topic-tag">conceito-base</span></h3>
@@ -430,7 +430,7 @@ botao.<span class="tf">setOnClickListener</span> {
             </div>
           </div>
           <div class="code-block">
-            <div class="cb-head"><span>MainActivity.kt</span><span>padrão usado nos 3 roteiros</span></div>
+            <div class="cb-head"><span>MainActivity.kt</span><span>padrão usado em apps Compose</span></div>
             <pre><span class="tk">enum class</span> <span class="tt">Tela</span> { <span class="ts">MENU</span>, <span class="ts">TELA_A</span>, <span class="ts">TELA_B</span> }
 
 <span class="tk">class</span> <span class="tt">MainActivity</span> : <span class="tt">ComponentActivity</span>() {
@@ -465,7 +465,7 @@ botao.<span class="tf">setOnClickListener</span> {
         <article class="topic" id="estado">
           <h3>Estado &amp; Recomposição <span class="topic-tag">o coração do compose</span></h3>
           <div class="topic-body">
-            <p>Três peças trabalham juntas nesta linha, que você já viu nos três roteiros:</p>
+            <p>Três peças trabalham juntas nesta linha, que você vai ver em praticamente todo app Compose:</p>
           </div>
           <div class="code-block">
             <div class="cb-head"><span>Anatomia da linha</span></div>
@@ -584,7 +584,7 @@ botao.<span class="tf">setOnClickListener</span> {
 
           <h4 style="font-size:16px;color:#fff;margin-top:32px;">Padrão Stateful / Stateless (opcional, mas comum em código real)</h4>
           <div class="topic-body">
-            <p>Em projetos maiores é comum ver <em>dois</em> Composables para a mesma tela: um "Stateful" (dono do estado, chamado pela Activity) e um "Stateless" (recebe tudo por parâmetro, fácil de testar e de dar <code>@Preview</code>). Aplicando isso ao <code class="mono">TelaAgua</code> do roteiro de saúde:</p>
+            <p>Em projetos maiores é comum ver <em>dois</em> Composables para a mesma tela: um "Stateful" (dono do estado, chamado pela Activity) e um "Stateless" (recebe tudo por parâmetro, fácil de testar e de dar <code>@Preview</code>). Aplicando isso a uma tela de contador de água (<code class="mono">TelaAgua</code>):</p>
           </div>
           <div class="code-block">
             <div class="cb-head"><span>Versão stateful — a que a MainActivity chama</span></div>
@@ -622,12 +622,12 @@ botao.<span class="tf">setOnClickListener</span> {
           </div>
           <div class="callout warn">
             <span class="icon">⚖️</span>
-            <p><strong>Trade-off honesto:</strong> separar em duas funções deixa o código mais testável e mais fácil de dar Preview com dados fixos — mas também dobra o número de funções e de parâmetros para manter em sincronia. Para os desafios dos roteiros (escopo pequeno, sem testes automatizados), <b>uma única função com State Hoisting simples já é suficiente</b> — o padrão Stateful/Stateless compensa mais em telas grandes ou em projetos com testes unitários de UI.</p>
+            <p><strong>Trade-off honesto:</strong> separar em duas funções deixa o código mais testável e mais fácil de dar Preview com dados fixos — mas também dobra o número de funções e de parâmetros para manter em sincronia. Para exemplos pequenos (escopo reduzido, sem testes automatizados), <b>uma única função com State Hoisting simples já é suficiente</b> — o padrão Stateful/Stateless compensa mais em telas grandes ou em projetos com testes unitários de UI.</p>
           </div>
 
           <div class="callout tip">
             <span class="icon">💡</span>
-            <p><strong>Regra prática para os roteiros:</strong> se uma função Composable recebe <code>onAlgumaCoisa: () -> Unit</code> como parâmetro, isso é State Hoisting em ação — ela "sobe" a responsabilidade da decisão para quem a chamou.</p>
+            <p><strong>Regra prática:</strong> se uma função Composable recebe <code>onAlgumaCoisa: () -> Unit</code> como parâmetro, isso é State Hoisting em ação — ela "sobe" a responsabilidade da decisão para quem a chamou.</p>
           </div>
         </article>
       </div>
@@ -642,7 +642,7 @@ botao.<span class="tf">setOnClickListener</span> {
           </div>
           <div class="callout">
             <span class="icon">🗺️</span>
-            <p>É exatamente o padrão usado nos três roteiros: <code class="mono">TelaSaude</code>, <code class="mono">TelaFinanceira</code> e <code class="mono">Tela</code> (miniaplicativos) — mesmo mecanismo, nomes diferentes.</p>
+            <p>É um padrão que se repete em qualquer app com várias telas: um <code class="mono">enum</code> descreve as telas possíveis e o estado guarda qual está ativa. O nome do enum muda de projeto para projeto; o mecanismo é o mesmo.</p>
           </div>
         </article>
 
@@ -684,7 +684,7 @@ botao.<span class="tf">setOnClickListener</span> {
             </div>
           </div>
           <div class="code-block">
-            <div class="cb-head"><span>Combo comum nos roteiros</span></div>
+            <div class="cb-head"><span>Combo comum</span></div>
             <pre><span class="tt">Modifier</span>
     .<span class="tf">fillMaxSize</span>()               <span class="tc">// ocupa a tela toda</span>
     .<span class="tf">padding</span>(<span class="ts">24</span>.dp)             <span class="tc">// respiro nas bordas da tela</span>
@@ -695,11 +695,11 @@ botao.<span class="tf">setOnClickListener</span> {
         <article class="topic" id="layouts">
           <h3>Layouts: Column, Row e Box <span class="topic-tag">componentes estruturais</span></h3>
           <div class="topic-body">
-            <p>Os três "contêineres" que você usa em praticamente toda tela dos roteiros:</p>
+            <p>Os três "contêineres" que você usa em praticamente toda tela:</p>
           </div>
           <table class="ref">
             <tr><th>Container</th><th>Empilha</th><th>Quando usar</th></tr>
-            <tr><td>Column</td><td>de cima para baixo</td><td>Formulários, menus com botões empilhados — o mais usado nos roteiros.</td></tr>
+            <tr><td>Column</td><td>de cima para baixo</td><td>Formulários, menus com botões empilhados — o mais usado.</td></tr>
             <tr><td>Row</td><td>da esquerda para direita</td><td>Grupos de botões lado a lado, um rótulo ao lado de um valor.</td></tr>
             <tr><td>Box</td><td>uns sobre os outros (empilhamento em Z)</td><td>Sobrepor elementos — um badge no canto de um card, por exemplo.</td></tr>
           </table>
@@ -721,13 +721,13 @@ botao.<span class="tf">setOnClickListener</span> {
           </div>
           <div class="callout tip">
             <span class="icon">💡</span>
-            <p>No boilerplate dos roteiros você sempre vê <code class="mono">horizontalAlignment = Alignment.CenterHorizontally</code> junto com <code class="mono">verticalArrangement = Arrangement.Center</code> numa <code>Column</code> — é exatamente essa combinação que centraliza o menu inteiro na tela, tanto na vertical quanto na horizontal.</p>
+            <p>Em telas de menu é comum ver <code class="mono">horizontalAlignment = Alignment.CenterHorizontally</code> junto com <code class="mono">verticalArrangement = Arrangement.Center</code> numa <code>Column</code> — é exatamente essa combinação que centraliza o menu inteiro na tela, tanto na vertical quanto na horizontal.</p>
           </div>
         </article>
 
         <article class="topic" id="componentes">
           <h3>Componentes Visuais <span class="topic-tag">galeria</span></h3>
-          <div class="topic-body"><p>Os blocos de UI prontos do Compose que aparecem nos três roteiros:</p></div>
+          <div class="topic-body"><p>Os blocos de UI prontos do Compose que aparecem em quase todo app:</p></div>
           <div class="gallery">
             <div class="gcard">
               <div class="gname">Text</div>
@@ -755,7 +755,7 @@ botao.<span class="tf">setOnClickListener</span> {
             </div>
           </div>
           <div class="code-block">
-            <div class="cb-head"><span>Exemplo combinado — típico dos desafios</span></div>
+            <div class="cb-head"><span>Exemplo combinado — tela típica de formulário</span></div>
             <pre><span class="tk">var</span> peso <span class="tk">by</span> <span class="tf">remember</span> { <span class="tf">mutableStateOf</span>(<span class="ts">""</span>) }
 
 <span class="tt">OutlinedTextField</span>(
@@ -769,9 +769,9 @@ botao.<span class="tf">setOnClickListener</span> {
             <p><strong>Erro clássico: "o campo não atualiza enquanto digito".</strong> Falta a linkagem bidirecional — o <code class="mono">value</code> precisa vir da variável de estado <em>e</em> o <code class="mono">onValueChange</code> precisa atualizar essa mesma variável. Se um dos dois lados estiver quebrado (ex: <code class="mono">onValueChange = {}</code> vazio), o campo trava.</p>
           </div>
 
-          <h4 style="font-size:16px;color:#fff;margin-top:36px;">Além dos roteiros: componentes comuns no mercado</h4>
+          <h4 style="font-size:16px;color:#fff;margin-top:36px;">Além do básico: componentes comuns no mercado</h4>
           <div class="topic-body">
-            <p>Os roteiros usam o essencial para focar em estado e navegação — mas num app real (ou numa entrevista técnica) esses aparecem o tempo todo:</p>
+            <p>O básico foca em estado e navegação — mas num app real (ou numa entrevista técnica) esses aparecem o tempo todo:</p>
           </div>
           <div class="gallery">
             <div class="gcard">
@@ -824,7 +824,7 @@ botao.<span class="tf">setOnClickListener</span> {
             </div>
           </div>
 
-          <div class="topic-body" style="margin-top:24px;"><p>Três desses merecem código, porque resolvem problemas estruturais que os componentes dos roteiros não cobrem:</p></div>
+          <div class="topic-body" style="margin-top:24px;"><p>Três desses merecem código, porque resolvem problemas estruturais que os componentes básicos não cobrem:</p></div>
 
           <table class="ref">
             <tr><th>Componente</th><th>Problema que resolve</th></tr>
@@ -950,7 +950,7 @@ botao.<span class="tf">setOnClickListener</span> {
         <article class="topic" id="seguranca">
           <h3>Segurança de Tipos <span class="topic-tag">boas práticas kotlin</span></h3>
           <div class="topic-body">
-            <p>Todo campo de texto do Compose entrega uma <code>String</code> — mesmo quando o usuário digita números. Converter essa <code>String</code> de forma insegura é a causa nº 1 de crash nos desafios práticos.</p>
+            <p>Todo campo de texto do Compose entrega uma <code>String</code> — mesmo quando o usuário digita números. Converter essa <code>String</code> de forma insegura é a causa nº 1 de crash em formulários.</p>
           </div>
           <div class="two-col">
             <div class="code-block">
@@ -965,7 +965,7 @@ botao.<span class="tf">setOnClickListener</span> {
             </div>
           </div>
           <div class="topic-body">
-            <p><code>toDoubleOrNull()</code> retorna <code>null</code> em vez de lançar exceção quando a conversão falha. O operador Elvis <code>?:</code> completa a frase: "e se der <code>null</code>, use este valor padrão". É o mesmo padrão em todos os três roteiros (IMC, juros compostos, conversor de temperatura).</p>
+            <p><code>toDoubleOrNull()</code> retorna <code>null</code> em vez de lançar exceção quando a conversão falha. O operador Elvis <code>?:</code> completa a frase: "e se der <code>null</code>, use este valor padrão". É o mesmo padrão em qualquer formulário numérico (IMC, juros, conversores).</p>
           </div>
         </article>
 
@@ -1002,67 +1002,19 @@ composeBom = <span class="ts">"2024.09.00"</span></pre>
       </div>
     </section>
 
-    <section id="casos">
+    <section id="revisao">
       <div class="container">
         <div class="section-kicker">Parte 2</div>
-        <h2 style="font-size:34px;color:#fff;">Os 3 roteiros na prática</h2>
-        <p class="section-intro">Mesma arquitetura, três domínios diferentes. Veja onde cada conceito acima aparece em cada roteiro.</p>
-
-        <div class="cs-tabs">
-          <button class="cs-tab-btn active" data-target="cs-mini">Hub de Miniaplicativos</button>
-          <button class="cs-tab-btn" data-target="cs-fin">Dashboard Financeiro</button>
-          <button class="cs-tab-btn" data-target="cs-saude">Hub de Saúde</button>
-        </div>
-
-        <div class="cs-panel active" id="cs-mini">
-          <div class="cs-meta">
-            <span class="cs-pill">enum Tela</span>
-            <span class="cs-pill">3 mini-apps: Contador, Conversor, Dado</span>
-            <span class="cs-pill">nível: introdutório</span>
-          </div>
-          <p>A atividade mais guiada das três: entrega o menu completo, um mini-app 100% resolvido (<code>TelaContador</code>) como modelo, e ensina a criar <em>stubs</em> vazios para não travar a compilação antes dos desafios.</p>
-          <div class="code-block">
-            <div class="cb-head"><span>Stub — técnica anti-erro de compilação</span></div>
-            <pre><span class="tk">@Composable fun</span> <span class="tf">TelaConversor</span>(onVoltar: () -> <span class="tt">Unit</span>) { <span class="tc">/* Desafio 1 */</span> }
-<span class="tk">@Composable fun</span> <span class="tf">TelaDado</span>(onVoltar: () -> <span class="tt">Unit</span>) { <span class="tc">/* Desafio 2 */</span> }</pre>
-          </div>
-          <p><b>Desafio Conversor:</b> aplica <a href="#seguranca">segurança de tipos</a> (<code class="mono">toDoubleOrNull()</code>) na fórmula <code class="mono">F = (C * 1.8) + 32</code>. <b>Desafio Dado:</b> introduz <code class="mono">(1..6).random()</code> e um <code>if</code> dentro de Composable para o bônus do "6 comemorativo".</p>
-        </div>
-
-        <div class="cs-panel" id="cs-fin">
-          <div class="cs-meta">
-            <span class="cs-pill">enum TelaFinanceira</span>
-            <span class="cs-pill">Juros Compostos + Conversor de Moedas</span>
-            <span class="cs-pill">nível: intermediário</span>
-          </div>
-          <p>É a única com a seção "Transição Histórica" (<a href="#single-activity">XML+Intents vs. Compose+State</a>) por escrito, e a única com um Troubleshooting Guide dedicado a erros de código — não só de build.</p>
-          <div class="code-block">
-            <div class="cb-head"><span>State Hoisting na tela de resumo</span></div>
-            <pre><span class="tk">@Composable</span>
-<span class="tk">fun</span> <span class="tf">TelaResumo</span>(onNavegar: (<span class="tt">TelaFinanceira</span>) -> <span class="tt">Unit</span>) {
-    <span class="tt">Button</span>(onClick = { <span class="tf">onNavegar</span>(<span class="tt">TelaFinanceira</span>.JUROS_COMPOSTOS) }) {
-        <span class="tt">Text</span>(<span class="ts">"Calculadora de Juros"</span>)
-    }
-}</pre>
-          </div>
-          <p><b>Desafio Juros:</b> três campos de estado independentes (Capital, Taxa, Tempo) e a fórmula <code class="mono">M = C * (1 + i)^t</code> com <code class="mono">kotlin.math.pow</code>. <b>Desafio Conversor:</b> taxas fixas de câmbio — bom terreno para depois discutir "e se a taxa fosse um estado editável?".</p>
-        </div>
-
-        <div class="cs-panel" id="cs-saude">
-          <div class="cs-meta">
-            <span class="cs-pill">enum TelaSaude</span>
-            <span class="cs-pill">Calculadora de IMC + Meta de Água</span>
-            <span class="cs-pill">nível: intermediário/autônomo</span>
-          </div>
-          <p>A única que aborda <a href="#build-errors">Troubleshooting de Build (AAR Metadata)</a> — o erro de <code>compileSdk</code> — em vez de erros de lógica de código. Boa oportunidade para o aluno aprender a ler mensagens de erro do Gradle, não só do compilador Kotlin.</p>
-          <div class="code-block">
-            <div class="cb-head"><span>Desafio IMC</span></div>
-            <pre><span class="tk">val</span> imc = peso / (altura * altura)
-<span class="tc">// exibir com 2 casas decimais</span>
-<span class="tc">// peso e altura via toDoubleOrNull() ?: 0.0</span></pre>
-          </div>
-          <p><b>Desafio Água:</b> contador simples (estado inicial 0) que multiplica por 250ml a cada clique — reforça <a href="#estado">estado numérico + recomposição</a> sem a complexidade de parsing de texto.</p>
-        </div>
+        <h2 style="font-size:34px;color:#fff;">Revisão rápida: 5 perguntas para qualquer tela</h2>
+        <p class="section-intro">Antes de escrever uma tela nova, responda estas perguntas. Cada uma aponta para o conceito que resolve o problema.</p>
+        <table class="ref">
+          <tr><th>Pergunta</th><th>Conceito</th><th>Onde rever</th></tr>
+          <tr><td>O que muda na tela com o tempo?</td><td>Estado: <code class="mono">remember</code> + <code class="mono">mutableStateOf</code></td><td><a href="#estado">Estado e recomposição</a></td></tr>
+          <tr><td>Quem precisa ler e quem precisa alterar esse valor?</td><td>State Hoisting: o estado sobe, o evento desce</td><td><a href="#state-hoisting">State Hoisting</a></td></tr>
+          <tr><td>Como as telas se organizam e navegam entre si?</td><td>Um <code class="mono">enum</code> de telas e um estado que guarda a atual</td><td><a href="#navegacao">Navegação</a></td></tr>
+          <tr><td>Como a tela é disposta e estilizada?</td><td>Column, Row, Box e Modifier, em ordem</td><td><a href="#layouts">Layouts</a> e <a href="#modifiers">Modifiers</a></td></tr>
+          <tr><td>E se o usuário digitar algo inesperado ou o build falhar?</td><td><code class="mono">toDoubleOrNull() ?: x</code> e leitura de erros do Gradle</td><td><a href="#seguranca">Segurança de tipos</a> e <a href="#build-errors">Erros de build</a></td></tr>
+        </table>
       </div>
     </section>
 
@@ -1094,7 +1046,7 @@ composeBom = <span class="ts">"2024.09.00"</span></pre>
 
     <footer>
       <div class="container">
-        <p>Material de apoio para as atividades de Hub de Saúde, Dashboard Financeiro e Hub de Miniaplicativos — Jetpack Compose / Kotlin.</p>
+        <p>Material de apoio — Jetpack Compose / Kotlin.</p>
       </div>
     </footer>
   </main>
